@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>训俭示康 - 司马光</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Liu+Jian+Mao+Cao&display=swap');
+
+  :root {
+    --ink-deep: #1e1a14;
+    --ink-medium: #3a352a;
+    --bamboo-dark: #2c3e1a;
+    --bamboo-mid: #4a6b2a;
+    --bamboo-light: #6a8f3e;
+    --bamboo-pale: #8ab55a;
+    --ink-wash-1: #4a5548;
+    --ink-wash-2: #6a7a68;
+    --paper: #f2ead8;
+    --paper-warm: #e8dcc6;
+    --paper-aged: #d8ccae;
+    --gold-accent: #b8943c;
+    --gold-light: #d4b85a;
+    --gold-dim: #8a7030;
+    --seal-red: #b83a28;
+    --text-primary: #2a2418;
+    --text-secondary: #5a5240;
+    --text-light: #8a806a;
+    --wood-dark: #3a2a1a;
+    --wood-mid: #5a4428;
+    --wood-light: #7a6440;
+    --highlight-bg: rgba(184, 148, 60, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(170deg, #0e0e08 0%, #161610 20%, #1a1c14 40%, #14160e 60%, #101008 80%, #0a0a06 100%);
+    font-family: 'Noto Serif SC', serif;
+    overflow-x: hidden;
+    padding: 40px 20px;
+  }
+
+  /* Bamboo background */
+  .bamboo-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .bamboo-stalk {
+    position: absolute;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(180deg, rgba(60, 80, 30, 0.15), rgba(40, 60, 20, 0.08));
+    border-radius: 3px 3px 0 0;
+  }
+
+  .bamboo-stalk::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: rgba(60, 80, 30, 0.2);
+    border-radius: 50%;
+  }
+
+  .bamboo-stalk:nth-child(1) { left: 8%; height: 70%; animation: bambooSway 8s ease-in-out infinite alternate; }
+  .bamboo-stalk:nth-child(1)::before { top: 30%; }
+  .bamboo-stalk:nth-child(2) { left: 12%; height: 85%; animation: bambooSway 7s ease-in-out infinite alternate-reverse; }
+  .bamboo-stalk:nth-child(2)::before { top: 25%; }
+  .bamboo-stalk:nth-child(3) { right: 10%; height: 75%; animation: bambooSway 9s ease-in-out infinite alternate; }
+  .bamboo-stalk:nth-child(3)::before { top: 35%; }
+  .bamboo-stalk:nth-child(4) { right: 6%; height: 90%; animation: bambooSway 6.5s ease-in-out infinite alternate-reverse; }
+  .bamboo-stalk:nth-child(4)::before { top: 20%; }
+  .bamboo-stalk:nth-child(5) { left: 5%; height: 60%; animation: bambooSway 10s ease-in-out infinite alternate; }
+  .bamboo-stalk:nth-child(5)::before { top: 40%; }
+
+  @keyframes bambooSway {
+    from { transform: rotate(-0.5deg); }
+    to { transform: rotate(0.5deg); }
+  }
+
+  /* Ink wash mountains */
+  .ink-wash {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .ink-layer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+
+  .ink-far {
+    height: 60%;
+    background:
+      radial-gradient(ellipse 30% 50% at 20% 100%, rgba(60, 70, 50, 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 55% at 55% 100%, rgba(50, 60, 45, 0.1) 0%, transparent 65%),
+      radial-gradient(ellipse 35% 48% at 80% 100%, rgba(55, 65, 48, 0.11) 0%, transparent 70%);
+    animation: inkDrift 35s ease-in-out infinite alternate;
+  }
+
+  .ink-near {
+    height: 40%;
+    background:
+      radial-gradient(ellipse 35% 45% at 25% 100%, rgba(40, 50, 30, 0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 30% 40% at 65% 100%, rgba(35, 45, 28, 0.12) 0%, transparent 65%);
+  }
+
+  @keyframes inkDrift {
+    from { transform: translateX(-5px); }
+    to { transform: translateX(5px); }
+  }
+
+  /* Floating particles */
+  .particles {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(184, 148, 60, 0.3);
+    border-radius: 50%;
+    animation: particleFloat linear infinite;
+  }
+
+  .particle:nth-child(1) { left: 15%; top: 20%; animation-duration: 25s; animation-delay: 0s; }
+  .particle:nth-child(2) { left: 35%; top: 40%; animation-duration: 30s; animation-delay: 5s; width: 3px; height: 3px; }
+  .particle:nth-child(3) { left: 65%; top: 30%; animation-duration: 22s; animation-delay: 10s; }
+  .particle:nth-child(4) { left: 80%; top: 50%; animation-duration: 28s; animation-delay: 3s; width: 3px; height: 3px; }
+  .particle:nth-child(5) { left: 50%; top: 15%; animation-duration: 35s; animation-delay: 8s; }
+  .particle:nth-child(6) { left: 25%; top: 60%; animation-duration: 20s; animation-delay: 12s; }
+
+  @keyframes particleFloat {
+    0% { transform: translate(0, 0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(40px, -80px) scale(0.5); opacity: 0; }
+  }
+
+  /* Main Card */
+  .card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 640px;
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 50%, var(--paper-aged) 100%);
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.08),
+      0 8px 16px rgba(0,0,0,0.12),
+      0 24px 48px rgba(0,0,0,0.18),
+      inset 0 0 80px rgba(90, 68, 40, 0.06);
+    animation: cardReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  @keyframes cardReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Top decorative band */
+  .card-top-band {
+    height: 8px;
+    background: linear-gradient(90deg,
+      var(--bamboo-dark),
+      var(--wood-dark),
+      var(--gold-dim),
+      var(--wood-dark),
+      var(--bamboo-dark)
+    );
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-top-band::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; right: 0; bottom: 0;
+    width: 300%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { transform: translateX(-33%); }
+    50% { transform: translateX(33%); }
+  }
+
+  /* Aged texture overlay */
+  .card-texture {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(160, 130, 80, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(140, 120, 70, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(120, 100, 60, 0.02) 0%, transparent 60%);
+  }
+
+  /* Inner frame */
+  .card-inner {
+    margin: 18px 22px;
+    border: 1px solid rgba(44, 62, 26, 0.12);
+    position: relative;
+    z-index: 2;
+  }
+
+  .card-inner::before {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px;
+    border: 1px solid rgba(44, 62, 26, 0.06);
+    pointer-events: none;
+  }
+
+  /* Corner ornaments */
+  .corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    z-index: 3;
+  }
+  .corner svg { width: 100%; height: 100%; }
+  .corner-tl { top: -1px; left: -1px; }
+  .corner-tr { top: -1px; right: -1px; transform: rotate(90deg); }
+  .corner-bl { bottom: -1px; left: -1px; transform: rotate(-90deg); }
+  .corner-br { bottom: -1px; right: -1px; transform: rotate(180deg); }
+
+  /* ===== HEADER ===== */
+  .card-header {
+    text-align: center;
+    padding: 36px 30px 28px;
+    position: relative;
+    background:
+      radial-gradient(ellipse at 50% 70%, rgba(44, 62, 26, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 30% 30%, rgba(184, 148, 60, 0.04) 0%, transparent 40%);
+  }
+
+  .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 28px; right: 28px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .genre-tag {
+    display: inline-block;
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 11px;
+    color: var(--text-light);
+    letter-spacing: 4px;
+    margin-bottom: 14px;
+    padding: 3px 16px;
+    border: 1px solid rgba(138, 112, 48, 0.25);
+    border-radius: 2px;
+    animation: titleFadeIn 1.2s ease-out 0.2s both;
+  }
+
+  .poem-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 36px;
+    color: var(--ink-deep);
+    letter-spacing: 10px;
+    margin-bottom: 14px;
+    position: relative;
+    animation: titleFadeIn 1.4s ease-out 0.3s both;
+  }
+
+  @keyframes titleFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .poem-author {
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 14px;
+    color: var(--text-secondary);
+    letter-spacing: 5px;
+    animation: titleFadeIn 1.4s ease-out 0.5s both;
+  }
+
+  .author-note {
+    display: block;
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  /* ===== ORIGINAL TEXT ===== */
+  .poem-body {
+    padding: 30px 36px;
+    position: relative;
+  }
+
+  .original-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    color: var(--ink-medium);
+    line-height: 2.2;
+    letter-spacing: 1px;
+    text-align: justify;
+    position: relative;
+  }
+
+  .original-text .paragraph {
+    text-indent: 2em;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: lineReveal 0.7s ease-out forwards;
+  }
+
+  .original-text .paragraph:nth-child(1) { animation-delay: 0.7s; }
+  .original-text .paragraph:nth-child(2) { animation-delay: 1.0s; }
+  .original-text .paragraph:nth-child(3) { animation-delay: 1.3s; }
+  .original-text .paragraph:nth-child(4) { animation-delay: 1.6s; }
+  .original-text .paragraph:nth-child(5) { animation-delay: 1.9s; }
+
+  .paragraph-label {
+    font-size: 11px;
+    color: var(--text-light);
+    opacity: 0.5;
+    margin-bottom: 2px;
+    letter-spacing: 2px;
+    text-indent: 0;
+  }
+
+  @keyframes lineReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Seal */
+  .seal {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 46px;
+    height: 46px;
+    border: 2px solid var(--seal-red);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 13px;
+    color: var(--seal-red);
+    writing-mode: vertical-rl;
+    letter-spacing: 2px;
+    opacity: 0;
+    transform: rotate(-3deg) scale(0.8);
+    animation: sealStamp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 1.8s forwards;
+    line-height: 1.3;
+    user-select: none;
+  }
+
+  @keyframes sealStamp {
+    to { opacity: 0.65; transform: rotate(-3deg) scale(1); }
+  }
+
+  /* Section dividers */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 36px;
+    gap: 10px;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(44, 62, 26, 0.12), transparent);
+  }
+
+  .section-divider-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.4;
+  }
+
+  /* ===== SECTIONS ===== */
+  .section {
+    padding: 24px 32px;
+    position: relative;
+  }
+
+  .section-label {
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 13px;
+    color: var(--gold-accent);
+    letter-spacing: 5px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 3px;
+    height: 13px;
+    background: linear-gradient(180deg, var(--gold-accent), var(--gold-dim));
+    border-radius: 2px;
+  }
+
+  /* Annotations */
+  .annotation-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 12px;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .annotation-term {
+    color: var(--bamboo-mid);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .annotation-def {
+    color: var(--text-secondary);
+  }
+
+  /* Key quotes */
+  .quote-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .quote-card {
+    background: linear-gradient(135deg, rgba(44, 62, 26, 0.04), rgba(184, 148, 60, 0.04));
+    border-left: 2px solid var(--gold-dim);
+    padding: 10px 14px;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .quote-text {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 17px;
+    color: var(--ink-deep);
+    letter-spacing: 2px;
+    line-height: 1.6;
+  }
+
+  .quote-meaning {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    line-height: 1.6;
+  }
+
+  /* Translation */
+  .translation-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 2;
+    text-indent: 2em;
+    letter-spacing: 0.5px;
+  }
+
+  /* Theme tags */
+  .theme-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .theme-tag {
+    font-size: 11px;
+    color: var(--bamboo-mid);
+    padding: 3px 10px;
+    border: 1px solid rgba(74, 107, 42, 0.2);
+    border-radius: 2px;
+    letter-spacing: 1px;
+    background: rgba(74, 107, 42, 0.03);
+  }
+
+  /* Appreciation */
+  .appreciation-text {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 2;
+    text-indent: 2em;
+    letter-spacing: 0.3px;
+  }
+
+  .highlight {
+    color: var(--wood-mid);
+    font-weight: 500;
+    border-bottom: 1px dashed rgba(90, 68, 40, 0.3);
+  }
+
+  /* Background info */
+  .bg-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.9;
+    padding: 12px 16px;
+    background: rgba(44, 62, 26, 0.03);
+    border-radius: 3px;
+    border: 1px solid rgba(44, 62, 26, 0.06);
+  }
+
+  /* Structure chart */
+  .structure-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .structure-item {
+    text-align: center;
+    padding: 10px 8px;
+    border: 1px solid rgba(44, 62, 26, 0.1);
+    border-radius: 3px;
+    background: rgba(44, 62, 26, 0.02);
+  }
+
+  .structure-label {
+    font-size: 11px;
+    color: var(--text-light);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .structure-value {
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 14px;
+    color: var(--ink-medium);
+    letter-spacing: 1px;
+  }
+
+  /* Footer */
+  .card-footer {
+    text-align: center;
+    padding: 18px 28px 24px;
+    position: relative;
+  }
+
+  .card-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 28px; right: 28px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .footer-ornament {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text-light);
+    letter-spacing: 3px;
+    opacity: 0.45;
+  }
+
+  .footer-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+  }
+
+  /* Bottom band */
+  .card-bottom-band {
+    height: 5px;
+    background: linear-gradient(90deg,
+      var(--bamboo-dark),
+      var(--wood-dark),
+      var(--gold-dim),
+      var(--wood-dark),
+      var(--bamboo-dark)
+    );
+  }
+
+  /* Responsive */
+  @media (max-width: 660px) {
+    body { padding: 20px 10px; }
+    .card-inner { margin: 12px 14px; }
+    .card-header { padding: 28px 18px 22px; }
+    .poem-title { font-size: 28px; letter-spacing: 6px; }
+    .poem-body { padding: 22px 18px; }
+    .original-text { font-size: 13.5px; }
+    .section { padding: 18px 20px; }
+    .structure-grid { grid-template-columns: 1fr; }
+    .seal { right: 14px; bottom: 14px; width: 40px; height: 40px; font-size: 12px; }
+    .annotation-list { font-size: 12px; }
+  }
+
+  @media print {
+    body { background: white; }
+    .bamboo-bg, .ink-wash, .particles { display: none; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background elements -->
+<div class="bamboo-bg">
+  <div class="bamboo-stalk"></div>
+  <div class="bamboo-stalk"></div>
+  <div class="bamboo-stalk"></div>
+  <div class="bamboo-stalk"></div>
+  <div class="bamboo-stalk"></div>
+</div>
+
+<div class="ink-wash">
+  <div class="ink-layer ink-far"></div>
+  <div class="ink-layer ink-near"></div>
+</div>
+
+<div class="particles">
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+  <div class="particle"></div>
+</div>
+
+<!-- Main Card -->
+<div class="card">
+  <div class="card-top-band"></div>
+  <div class="card-texture"></div>
+
+  <div class="card-inner">
+    <!-- Corners -->
+    <div class="corner corner-tl">
+      <svg viewBox="0 0 18 18" fill="none">
+        <path d="M0 0 L18 0 L18 3 L3 3 L3 18 L0 18 Z" fill="rgba(44,62,26,0.2)"/>
+      </svg>
+    </div>
+    <div class="corner corner-tr">
+      <svg viewBox="0 0 18 18" fill="none">
+        <path d="M0 0 L18 0 L18 3 L3 3 L3 18 L0 18 Z" fill="rgba(44,62,26,0.2)"/>
+      </svg>
+    </div>
+    <div class="corner corner-bl">
+      <svg viewBox="0 0 18 18" fill="none">
+        <path d="M0 0 L18 0 L18 3 L3 3 L3 18 L0 18 Z" fill="rgba(44,62,26,0.2)"/>
+      </svg>
+    </div>
+    <div class="corner corner-br">
+      <svg viewBox="0 0 18 18" fill="none">
+        <path d="M0 0 L18 0 L18 3 L3 3 L3 18 L0 18 Z" fill="rgba(44,62,26,0.2)"/>
+      </svg>
+    </div>
+
+    <!-- Header -->
+    <div class="card-header">
+      <div class="genre-tag">家训散文</div>
+      <h1 class="poem-title">训俭示康</h1>
+      <p class="poem-author">
+        司马光
+        <span class="author-note">北宋 · 政治家、史学家</span>
+      </p>
+    </div>
+
+    <!-- Original Text -->
+    <div class="poem-body">
+      <div class="section-label">原　文</div>
+      <div class="original-text">
+        <p class="paragraph">吾本寒家，世以清白相承。吾性不喜华靡，自为乳儿，长者加以金银华美之服，辄羞赧弃去之。二十忝科名，闻喜宴独不戴花。同年曰："君赐不可违也。"乃簪一花。平生衣取蔽寒，食取充腹；亦不敢服垢弊以矫俗干名，但顺吾性而已。众人皆以奢靡为荣，吾心独以俭素为美。人皆嗤吾固陋，吾不以为病。应之曰："孔子称'与其不逊也宁固。'又曰'以约失之者鲜矣。'又曰'士志于道，而耻恶衣恶食者，未足与议也。'古人以俭为美德，今人乃以俭相诟病。嘻，异哉！"</p>
+        <p class="paragraph">近岁风俗尤为侈靡，走卒类士服，农夫蹑丝履。吾记天圣中，先公为群牧判官，客至未尝不置酒，或三行、五行，多不过七行。酒酤于市，果止于梨、栗、枣、柿之类；肴止于脯、醢、菜羹，器用瓷、漆。当时士大夫家皆然，人不相非也。会数而礼勤，物薄而情厚。近日士大夫家，酒非内法，果、肴非远方珍异，食非多品，器皿非满案，不敢会宾友，常量月营聚，然后敢发书。苟或不然，人争非之，以为鄙吝。故不随俗靡者，盖鲜矣。嗟乎！风俗颓弊如是，居位者虽不能禁，忍助之乎！</p>
+        <p class="paragraph">又闻昔李文靖公为相，治居第于封丘门内，厅事前仅容旋马，或言其太隘。公笑曰："居第当传子孙，此为宰相厅事诚隘，为太祝奉礼厅事已宽矣。"参政鲁公为谏官，真宗遣使急召之，得于酒家，既入，问其所来，以实对。上曰："卿为清望官，奈何饮于酒肆？"对曰："臣家贫，客至无器皿、肴、果，故就酒家觞之。"上以无隐，益重之。张文节为相，自奉养如为河阳掌书记时，所亲或规之曰："公今受俸不少，而自奉若此。公虽自信清约，外人颇有公孙布被之讥。公宜少从众。"公叹曰："吾今日之俸，虽举家锦衣玉食，何患不能？顾人之常情，由俭入奢易，由奢入俭难。吾今日之俸岂能常有？身岂能常存？一旦异于今日，家人习奢已久，不能顿俭，必致失所。岂若吾居位、去位、身存、身亡，常如一日乎？"呜呼！大贤之深谋远虑，岂庸人所及哉！</p>
+        <p class="paragraph">御孙曰："俭，德之共也；侈，恶之大也。"共，同也；言有德者皆由俭来也。夫俭则寡欲，君子寡欲，则不役于物，可以直道而行；小人寡欲，则能谨身节用，远罪丰家。故曰："俭，德之共也。"侈则多欲。君子多欲则贪慕富贵，枉道速祸；小人多欲则多求妄用，败家丧身；是以居官必贿，居乡必盗。故曰："侈，恶之大也。"</p>
+        <p class="paragraph">昔正考父饘粥以糊口，孟僖子知其后必有达人。季文子相三君，妾不衣帛，马不食粟，君子以为忠。管仲镂簋朱纮，山节藻棁，孔子鄙其小器。公叔文子享卫灵公，史鰌知其及祸；及戌，果以富得罪出亡。何曾日食万钱，至孙以骄溢倾家。石崇以奢靡夸人，卒以此死东市。近世寇莱公豪侈冠一时，然以功业大，人莫之非，子孙习其家风，今多穷困。其余以俭立名，以侈自败者多矣，不可遍数，聊举数人以训汝。汝非徒身当服行，当以训汝子孙，使知前辈之风俗云。</p>
+      </div>
+      <div class="seal">温公<br>训言</div>
+    </div>
+
+    <div class="section-divider">
+      <svg class="section-divider-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1 L10 6 L15 8 L10 10 L8 15 L6 10 L1 8 L6 6 Z" fill="rgba(138,112,48,0.5)"/>
+      </svg>
+    </div>
+
+    <!-- Annotations -->
+    <div class="section">
+      <div class="section-label">注　释</div>
+      <div class="annotation-list">
+        <span class="annotation-term">寒家</span>
+        <span class="annotation-def">贫寒的家庭</span>
+        <span class="annotation-term">华靡</span>
+        <span class="annotation-def">豪华奢侈</span>
+        <span class="annotation-term">忝科名</span>
+        <span class="annotation-def">谦辞，指考取功名</span>
+        <span class="annotation-term">闻喜宴</span>
+        <span class="annotation-def">科举及第后皇帝赐的宴会</span>
+        <span class="annotation-term">同年</span>
+        <span class="annotation-def">同一年考中进士的人</span>
+        <span class="annotation-term">矫俗干名</span>
+        <span class="annotation-def">故意违背世俗来求取名声</span>
+        <span class="annotation-term">诟病</span>
+        <span class="annotation-def">指责、讥笑</span>
+        <span class="annotation-term">走卒</span>
+        <span class="annotation-def">差役、仆役</span>
+        <span class="annotation-term">蹑丝履</span>
+        <span class="annotation-def">穿着丝绸鞋</span>
+        <span class="annotation-term">酒酤于市</span>
+        <span class="annotation-def">从市集买酒</span>
+        <span class="annotation-term">脯醢</span>
+        <span class="annotation-def">脯：干肉；醢：肉酱</span>
+        <span class="annotation-term">内法</span>
+        <span class="annotation-def">宫中酿造的方法</span>
+        <span class="annotation-term">鄙吝</span>
+        <span class="annotation-def">小气、吝啬</span>
+        <span class="annotation-term">厅事</span>
+        <span class="annotation-def">厅堂、办公之处</span>
+        <span class="annotation-term">旋马</span>
+        <span class="annotation-def">调转马头，形容地方狭小</span>
+        <span class="annotation-term">清望官</span>
+        <span class="annotation-def">有清高名望的官职</span>
+        <span class="annotation-term">饘粥</span>
+        <span class="annotation-def">厚粥，稀饭</span>
+        <span class="annotation-term">镂簋朱纮</span>
+        <span class="annotation-def">刻镂的食器与红色系带，形容过度装饰</span>
+        <span class="annotation-term">山节藻棁</span>
+        <span class="annotation-def">斗拱上画山，短柱上绘水草，形容建筑奢靡</span>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <svg class="section-divider-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3 L8 13 M3 8 L13 8" stroke="rgba(138,112,48,0.4)" stroke-width="1"/>
+        <circle cx="8" cy="8" r="2" fill="none" stroke="rgba(138,112,48,0.3)" stroke-width="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Key Quotes -->
+    <div class="section">
+      <div class="section-label">名　句</div>
+      <div class="quote-grid">
+        <div class="quote-card">
+          <div class="quote-text">俭，德之共也；侈，恶之大也。</div>
+          <div class="quote-meaning">节俭是美德的根本，奢侈是罪恶的根源。此句为全文核心论点。</div>
+        </div>
+        <div class="quote-card">
+          <div class="quote-text">由俭入奢易，由奢入俭难。</div>
+          <div class="quote-meaning">从节俭走向奢侈容易，从奢侈回到节俭则很难。千古名言，警醒世人。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <svg class="section-divider-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3 L8 13 M3 8 L13 8" stroke="rgba(138,112,48,0.4)" stroke-width="1"/>
+        <circle cx="8" cy="8" r="2" fill="none" stroke="rgba(138,112,48,0.3)" stroke-width="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Structure Analysis -->
+    <div class="section">
+      <div class="section-label">篇　章</div>
+      <div class="structure-grid">
+        <div class="structure-item">
+          <div class="structure-label">第一段</div>
+          <div class="structure-value">现身说法，自述俭朴</div>
+        </div>
+        <div class="structure-item">
+          <div class="structure-label">第二段</div>
+          <div class="structure-value">对比古今，针砭时弊</div>
+        </div>
+        <div class="structure-item">
+          <div class="structure-label">第三段</div>
+          <div class="structure-value">引举实例，贤臣尚俭</div>
+        </div>
+        <div class="structure-item">
+          <div class="structure-label">第四段</div>
+          <div class="structure-value">正反论证，俭侈之辨</div>
+        </div>
+        <div class="structure-item" style="grid-column: 1 / -1;">
+          <div class="structure-label">第五段</div>
+          <div class="structure-value">以史为鉴，训诫子孙</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <svg class="section-divider-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3 L8 13 M3 8 L13 8" stroke="rgba(138,112,48,0.4)" stroke-width="1"/>
+        <circle cx="8" cy="8" r="2" fill="none" stroke="rgba(138,112,48,0.3)" stroke-width="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Appreciation -->
+    <div class="section">
+      <div class="section-label">赏　析</div>
+      <p class="appreciation-text">
+        本文是司马光写给儿子司马康的一封家训，全文以<span class="highlight">「俭」与「侈」</span>为核心，采用正反对比的论证方法，从个人修养讲到家族兴衰，层层递进，逻辑严密。第一段现身说法，自述生平以俭素为美，不随俗流；第二段对比天圣年间与近岁的宴客风气，针砭侈靡之弊；第三段举李文靖、鲁宗道、张文节三位贤臣之例，借张文节之口道出千古名言<span class="highlight">「由俭入奢易，由奢入俭难」</span>；第四段以<span class="highlight">「俭，德之共也；侈，恶之大也」</span>为纲，从君子与小人两个层面展开正反论述；第五段列举正考父、季文子、管仲、何曾、石崇、寇准等正反历史人物，以史为鉴。全文语言质朴而道理深刻，不事雕琢却字字千钧，是古代家训散文的典范之作。
+      </p>
+    </div>
+
+    <div class="section-divider">
+      <svg class="section-divider-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3 L8 13 M3 8 L13 8" stroke="rgba(138,112,48,0.4)" stroke-width="1"/>
+        <circle cx="8" cy="8" r="2" fill="none" stroke="rgba(138,112,48,0.3)" stroke-width="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Background -->
+    <div class="section">
+      <div class="section-label">背　景</div>
+      <p class="bg-info">
+        司马光（1019—1086），字君实，号迂叟，陕州夏县（今山西夏县）人，世称涑水先生。北宋著名政治家、史学家，主编《资治通鉴》。本文选自《温国文正司马公文集》，是司马光为训诫儿子司马康而写的家书。当时北宋社会浮华奢靡之风日盛，司马光深感忧虑，故以此文告诫后人崇尚节俭、力戒奢侈。
+      </p>
+    </div>
+
+    <div class="section-divider">
+      <svg class="section-divider-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3 L8 13 M3 8 L13 8" stroke="rgba(138,112,48,0.4)" stroke-width="1"/>
+        <circle cx="8" cy="8" r="2" fill="none" stroke="rgba(138,112,48,0.3)" stroke-width="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Themes -->
+    <div class="section">
+      <div class="section-label">主　题</div>
+      <div class="theme-tags">
+        <span class="theme-tag">崇俭戒奢</span>
+        <span class="theme-tag">修身齐家</span>
+        <span class="theme-tag">正反对比</span>
+        <span class="theme-tag">家训传承</span>
+        <span class="theme-tag">以德立身</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <div class="footer-ornament">
+        <div class="footer-dot"></div>
+        涑水先生
+        <div class="footer-dot"></div>
+        家训散文
+        <div class="footer-dot"></div>
+        北宋
+        <div class="footer-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-bottom-band"></div>
+</div>
+
+</body>
+</html>
