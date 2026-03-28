@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canvas 粒子动画 - 星座图效果</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0e27;
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #c0c8e0;
+  }
+
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+  }
+
+  /* ---- 控制面板 ---- */
+  .panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    width: 280px;
+    background: rgba(12, 16, 40, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(100, 140, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s;
+  }
+
+  .panel.collapsed {
+    transform: translateX(calc(100% + 30px));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .panel-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #8ea8ff;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: #5b7fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #5b7fff;
+  }
+
+  .control-group {
+    margin-bottom: 14px;
+  }
+
+  .control-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #8892b0;
+  }
+
+  .control-group label span {
+    color: #a0b4ff;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(91, 127, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; height: 14px;
+    background: #5b7fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(91, 127, 255, 0.6);
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+  }
+
+  /* 切换按钮 */
+  .toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 11;
+    width: 40px; height: 40px;
+    background: rgba(12, 16, 40, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(100, 140, 255, 0.25);
+    border-radius: 10px;
+    color: #8ea8ff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .toggle-btn:hover { background: rgba(30, 40, 80, 0.9); }
+
+  /* 模式按钮组 */
+  .mode-group {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 6px 0;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(91, 127, 255, 0.1);
+    border: 1px solid rgba(91, 127, 255, 0.2);
+    border-radius: 6px;
+    color: #8892b0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mode-btn.active {
+    background: rgba(91, 127, 255, 0.25);
+    border-color: #5b7fff;
+    color: #a0b4ff;
+  }
+
+  .mode-btn:hover { background: rgba(91, 127, 255, 0.18); }
+
+  /* 统计信息 */
+  .stats {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(100, 140, 255, 0.12);
+    font-size: 12px;
+    color: #5a6380;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .stats span { color: #7a8abf; }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<!-- 面板切换按钮 -->
+<button class="toggle-btn" id="toggleBtn" title="切换控制面板">&#9881;</button>
+
+<!-- 控制面板 -->
+<div class="panel" id="panel">
+  <div class="panel-title">粒子控制台</div>
+
+  <div class="control-group">
+    <label>粒子数量 <span id="countVal">250</span></label>
+    <input type="range" id="countSlider" min="50" max="600" value="250" step="10">
+  </div>
+
+  <div class="control-group">
+    <label>连线距离 <span id="distVal">120</span>px</label>
+    <input type="range" id="distSlider" min="40" max="250" value="120" step="5">
+  </div>
+
+  <div class="control-group">
+    <label>鼠标影响半径 <span id="radiusVal">180</span>px</label>
+    <input type="range" id="radiusSlider" min="50" max="400" value="180" step="10">
+  </div>
+
+  <div class="control-group">
+    <label>鼠标力度 <span id="forceVal">0.06</span></label>
+    <input type="range" id="forceSlider" min="0.01" max="0.20" value="0.06" step="0.01">
+  </div>
+
+  <div class="control-group">
+    <label>粒子速度 <span id="speedVal">1.0</span>x</label>
+    <input type="range" id="speedSlider" min="0.1" max="3.0" value="1.0" step="0.1">
+  </div>
+
+  <div class="control-group">
+    <label>鼠标模式</label>
+    <div class="mode-group">
+      <button class="mode-btn active" data-mode="attract">吸引</button>
+      <button class="mode-btn" data-mode="repel">排斥</button>
+      <button class="mode-btn" data-mode="none">无</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div>FPS: <span id="fpsVal">0</span></div>
+    <div>连线: <span id="lineVal">0</span></div>
+    <div>粒子: <span id="particleVal">0</span></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ========== 配置 ==========
+  const config = {
+    count: 250,
+    linkDist: 120,
+    mouseRadius: 180,
+    mouseForce: 0.06,
+    speedMul: 1.0,
+    mouseMode: 'attract', // attract | repel | none
+    baseSpeed: 0.4,
+    minSize: 1.2,
+    maxSize: 3.5,
+    lineOpacityMax: 0.35,
+    particleColor: [91, 127, 255],
+  };
+
+  // ========== Canvas 初始化 ==========
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => {
+    resize();
+    // 把超出边界的粒子拉回来
+    particles.forEach(p => {
+      if (p.x > W) p.x = Math.random() * W;
+      if (p.y > H) p.y = Math.random() * H;
+    });
+  });
+
+  // ========== 鼠标追踪 ==========
+  const mouse = { x: -9999, y: -9999, active: false };
+
+  canvas.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.active = true;
+  });
+  canvas.addEventListener('mouseleave', () => { mouse.active = false; });
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    mouse.x = t.clientX;
+    mouse.y = t.clientY;
+    mouse.active = true;
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => { mouse.active = false; });
+
+  // ========== 粒子类 ==========
+  class Particle {
+    constructor() {
+      this.reset(true);
+    }
+
+    reset(initial = false) {
+      this.x = initial ? Math.random() * W : (Math.random() < 0.5 ? -10 : W + 10);
+      this.y = initial ? Math.random() * H : (Math.random() < 0.5 ? -10 : H + 10);
+      if (initial) {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H;
+      }
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (0.2 + Math.random() * 0.6) * config.baseSpeed;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.size = config.minSize + Math.random() * (config.maxSize - config.minSize);
+      this.baseAlpha = 0.25 + Math.random() * 0.55;
+      this.alpha = this.baseAlpha;
+      // 用于呼吸效果
+      this.pulsePhase = Math.random() * Math.PI * 2;
+      this.pulseSpeed = 0.005 + Math.random() * 0.015;
+    }
+
+    update(dt) {
+      // 速度乘数
+      const sm = config.speedMul;
+
+      // 鼠标交互
+      if (mouse.active && config.mouseMode !== 'none') {
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const distSq = dx * dx + dy * dy;
+        const radius = config.mouseRadius;
+        if (distSq < radius * radius && distSq > 1) {
+          const dist = Math.sqrt(distSq);
+          const force = (1 - dist / radius) * config.mouseForce;
+          const dir = config.mouseMode === 'attract' ? 1 : -1;
+          this.vx += (dx / dist) * force * dir;
+          this.vy += (dy / dist) * force * dir;
+        }
+      }
+
+      // 移动
+      this.x += this.vx * sm * dt;
+      this.y += this.vy * sm * dt;
+
+      // 速度衰减（防止粒子无限加速）
+      this.vx *= 0.998;
+      this.vy *= 0.998;
+
+      // 边界环绕
+      const margin = 20;
+      if (this.x < -margin) this.x = W + margin;
+      else if (this.x > W + margin) this.x = -margin;
+      if (this.y < -margin) this.y = H + margin;
+      else if (this.y > H + margin) this.y = -margin;
+
+      // 呼吸效果
+      this.pulsePhase += this.pulseSpeed * dt;
+      this.alpha = this.baseAlpha + Math.sin(this.pulsePhase) * 0.15;
+    }
+
+    draw() {
+      const [r, g, b] = config.particleColor;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},${this.alpha})`;
+      ctx.fill();
+
+      // 较大粒子加光晕
+      if (this.size > 2.5) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${this.alpha * 0.12})`;
+        ctx.fill();
+      }
+    }
+  }
+
+  // ========== 粒子池 ==========
+  let particles = [];
+
+  function initParticles() {
+    particles = [];
+    for (let i = 0; i < config.count; i++) {
+      particles.push(new Particle());
+    }
+  }
+  initParticles();
+
+  function syncParticleCount() {
+    const target = config.count;
+    while (particles.length < target) {
+      particles.push(new Particle());
+    }
+    while (particles.length > target) {
+      particles.pop();
+    }
+  }
+
+  // ========== 空间网格（性能优化） ==========
+  let grid = {};
+  let gridCellSize = 0;
+
+  function buildGrid() {
+    gridCellSize = config.linkDist;
+    grid = {};
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      const cx = (p.x / gridCellSize) | 0;
+      const cy = (p.y / gridCellSize) | 0;
+      const key = cx + ',' + cy;
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(i);
+    }
+  }
+
+  function getNeighborIndices(x, y) {
+    const cx = (x / gridCellSize) | 0;
+    const cy = (y / gridCellSize) | 0;
+    const result = [];
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const key = (cx + dx) + ',' + (cy + dy);
+        const cell = grid[key];
+        if (cell) {
+          for (let k = 0; k < cell.length; k++) {
+            result.push(cell[k]);
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  // ========== 绘制连线 ==========
+  let lineCount = 0;
+
+  function drawLinks() {
+    const [r, g, b] = config.particleColor;
+    const maxDist = config.linkDist;
+    const maxDistSq = maxDist * maxDist;
+    lineCount = 0;
+
+    buildGrid();
+
+    for (let i = 0; i < particles.length; i++) {
+      const a = particles[i];
+      const neighbors = getNeighborIndices(a.x, a.y);
+
+      for (let n = 0; n < neighbors.length; n++) {
+        const j = neighbors[n];
+        if (j <= i) continue; // 避免重复绘制
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < maxDistSq) {
+          const dist = Math.sqrt(distSq);
+          const opacity = (1 - dist / maxDist) * config.lineOpacityMax;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+          lineCount++;
+        }
+      }
+    }
+  }
+
+  // ========== 动画循环 ==========
+  let lastTime = 0;
+  let frameCount = 0;
+  let fpsTime = 0;
+  let fps = 0;
+
+  function animate(timestamp) {
+    requestAnimationFrame(animate);
+
+    const rawDt = timestamp - lastTime;
+    lastTime = timestamp;
+    // 归一化 dt：60fps 时 dt≈16.67ms，归一化为 1
+    const dt = Math.min(rawDt / 16.667, 3); // 限制最大步长防卡顿跳帧
+
+    // FPS 计算
+    frameCount++;
+    if (timestamp - fpsTime >= 1000) {
+      fps = frameCount;
+      frameCount = 0;
+      fpsTime = timestamp;
+      updateStats();
+    }
+
+    // 清屏
+    ctx.clearRect(0, 0, W, H);
+
+    // 更新粒子
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update(dt);
+    }
+
+    // 绘制连线
+    drawLinks();
+
+    // 绘制粒子
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].draw();
+    }
+
+    // 鼠标光标光晕
+    if (mouse.active && config.mouseMode !== 'none') {
+      const [r, g, b] = config.particleColor;
+      const gradient = ctx.createRadialGradient(
+        mouse.x, mouse.y, 0,
+        mouse.x, mouse.y, config.mouseRadius
+      );
+      gradient.addColorStop(0, `rgba(${r},${g},${b},0.06)`);
+      gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, config.mouseRadius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+  }
+
+  requestAnimationFrame(animate);
+
+  // ========== 控制面板逻辑 ==========
+  const panel = document.getElementById('panel');
+  const toggleBtn = document.getElementById('toggleBtn');
+  let panelOpen = true;
+
+  toggleBtn.addEventListener('click', () => {
+    panelOpen = !panelOpen;
+    panel.classList.toggle('collapsed', !panelOpen);
+    toggleBtn.style.display = panelOpen ? 'none' : 'flex';
+  });
+
+  // 点击面板关闭按钮区域外时隐藏（用面板内的关闭行为）
+  // ESC 键切换面板
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      panelOpen = !panelOpen;
+      panel.classList.toggle('collapsed', !panelOpen);
+      toggleBtn.style.display = panelOpen ? 'none' : 'flex';
+    }
+  });
+
+  // 面板打开时隐藏齿轮按钮
+  toggleBtn.style.display = 'none';
+
+  // 滑块绑定
+  function bindSlider(id, valId, configKey, formatter, onChange) {
+    const slider = document.getElementById(id);
+    const valEl = document.getElementById(valId);
+    slider.addEventListener('input', () => {
+      const v = parseFloat(slider.value);
+      config[configKey] = v;
+      valEl.textContent = formatter ? formatter(v) : v;
+      if (onChange) onChange(v);
+    });
+  }
+
+  bindSlider('countSlider', 'countVal', 'count', null, () => syncParticleCount());
+  bindSlider('distSlider', 'distVal', 'linkDist', null, null);
+  bindSlider('radiusSlider', 'radiusVal', 'mouseRadius', null, null);
+  bindSlider('forceSlider', 'forceVal', 'mouseForce', v => v.toFixed(2), null);
+  bindSlider('speedSlider', 'speedVal', 'speedMul', v => v.toFixed(1), null);
+
+  // 鼠标模式按钮
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      config.mouseMode = btn.dataset.mode;
+    });
+  });
+
+  // 统计信息更新
+  function updateStats() {
+    document.getElementById('fpsVal').textContent = fps;
+    document.getElementById('lineVal').textContent = lineCount;
+    document.getElementById('particleVal').textContent = particles.length;
+  }
+})();
+</script>
+</body>
+</html>
