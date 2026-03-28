@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>愤怒的小鸟</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui-overlay">
+            <div id="score-display">得分: <span id="score">0</span></div>
+            <div id="level-display">关卡: <span id="level">1</span></div>
+            <div id="birds-display">剩余: <span id="birds-left">3</span></div>
+        </div>
+        <div id="start-screen" class="overlay">
+            <h1>愤怒的小鸟</h1>
+            <p>拖拽小鸟拉弹弓，松手发射！<br>消灭所有小猪即可过关！</p>
+            <button id="start-btn">开始游戏</button>
+        </div>
+        <div id="level-complete" class="overlay hidden">
+            <h2>关卡通过!</h2>
+            <p>得分: <span id="level-score">0</span></p>
+            <div id="star-rating"></div>
+            <button id="next-level-btn">下一关</button>
+        </div>
+        <div id="game-over" class="overlay hidden">
+            <h2>游戏结束</h2>
+            <p>小猪还没消灭完...</p>
+            <button id="retry-btn">重新尝试</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
