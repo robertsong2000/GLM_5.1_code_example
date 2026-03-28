@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实时搜索 + 防抖</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding-top: 80px;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 0 20px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 24px;
+    color: #1a1a2e;
+    margin-bottom: 24px;
+  }
+
+  /* ---- 搜索框 ---- */
+  .search-box {
+    position: relative;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 14px 48px 14px 44px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+  }
+
+  .search-input:focus {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, .15);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #aaa;
+    cursor: pointer;
+    display: none;
+    padding: 4px;
+    line-height: 1;
+  }
+
+  .clear-btn.visible { display: block; }
+  .clear-btn:hover { color: #555; }
+
+  /* ---- 结果区域 ---- */
+  .results-area {
+    margin-top: 8px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+
+  /* 骨架屏 */
+  .skeleton-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .skeleton-item:last-child { border-bottom: none; }
+
+  .skeleton-bar {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .skeleton-bar.title { width: 55%; }
+  .skeleton-bar.desc  { width: 80%; flex: 1; }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* 搜索结果 */
+  .result-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background .15s;
+  }
+
+  .result-item:last-child { border-bottom: none; }
+
+  .result-item:hover,
+  .result-item.active {
+    background: #f5f3ff;
+  }
+
+  .result-item.active {
+    border-left: 3px solid #6c5ce7;
+    padding-left: 15px;
+  }
+
+  .result-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+
+  .result-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  /* 高亮关键词 */
+  mark {
+    background: #ffeaa7;
+    color: inherit;
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  /* 空状态 / 无结果 */
+  .state-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+  }
+
+  .state-msg .icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+
+  .state-msg p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* 底部提示 */
+  .hint {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #bbb;
+  }
+
+  .kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 11px;
+    background: #fafafa;
+    color: #888;
+  }
+</style>
+</head>
+<body>
+
+<div class="search-container">
+  <h1>实时搜索</h1>
+
+  <div class="search-box">
+    <span class="search-icon">&#128269;</span>
+    <input
+      class="search-input"
+      type="text"
+      placeholder="搜索关键词，支持中英文..."
+      autocomplete="off"
+    />
+    <button class="clear-btn">&times;</button>
+  </div>
+
+  <div class="results-area" id="results"></div>
+
+  <div class="hint">
+    <kbd class="kbd">&uarr;</kbd> <kbd class="kbd">&darr;</kbd> 选择 &nbsp;
+    <kbd class="kbd">Enter</kbd> 确认 &nbsp;
+    <kbd class="kbd">Esc</kbd> 清空
+  </div>
+</div>
+
+<script>
+// ==================== 模拟数据集 ====================
+const DATASET = [
+  { title: "JavaScript 闭包详解",           desc: "深入理解闭包、作用域链及其在实际开发中的应用" },
+  { title: "Python 装饰器入门",             desc: "从零学习 Python 装饰器的用法和原理" },
+  { title: "React Hooks 最佳实践",          desc: "使用 useState、useEffect 等 Hooks 编写优雅的组件" },
+  { title: "Docker 容器化部署",             desc: "使用 Docker 容器快速部署前后端应用" },
+  { title: "TypeScript 泛型进阶",           desc: "掌握 TypeScript 泛型约束、条件类型和映射类型" },
+  { title: "Node.js 流式处理",              desc: "使用 Stream API 高效处理大文件读写" },
+  { title: "CSS Grid 布局完全指南",         desc: "用 Grid 实现复杂二维布局的终极教程" },
+  { title: "Vue 3 Composition API",         desc: "Vue 3 组合式 API 的核心概念和实战技巧" },
+  { title: "Webpack 5 性能优化",            desc: "通过代码分割、Tree Shaking 等手段优化打包体积" },
+  { title: "Git 分支管理策略",              desc: "Git Flow、Trunk Based 等常见分支策略对比" },
+  { title: "Rust 所有权机制",               desc: "理解 Rust 中所有权、借用和生命周期的核心概念" },
+  { title: "GraphQL 入门教程",              desc: "对比 REST，学习 GraphQL 查询语言和 Schema 设计" },
+  { title: "Redis 缓存实战",               desc: "使用 Redis 实现缓存穿透、击穿、雪崩的解决方案" },
+  { title: "Flutter 跨平台开发",            desc: "一套代码同时构建 iOS 和 Android 应用" },
+  { title: "MySQL 索引优化",                desc: "深入理解 B+ 树索引、覆盖索引和最左前缀原则" },
+  { title: "Kubernetes 入门实战",           desc: "从 Pod、Service 到 Ingress 的完整入门指南" },
+  { title: "Tailwind CSS 快速上手",         desc: "原子化 CSS 框架的核心理念和常用工具类" },
+  { title: "Go 并发编程：goroutine 与 channel", desc: "使用 goroutine 和 channel 构建高并发服务" },
+  { title: "算法：动态规划经典题解",        desc: "从背包问题到最长公共子序列的详细推导" },
+  { title: "Nginx 反向代理配置",            desc: "配置 Nginx 反向代理、负载均衡和 HTTPS" },
+];
+
+// ==================== DOM 引用 ====================
+const inputEl    = document.querySelector('.search-input');
+const clearBtn   = document.querySelector('.clear-btn');
+const resultsEl  = document.getElementById('results');
+
+// ==================== 状态 ====================
+let debounceTimer  = null;
+let activeIndex    = -1;   // 键盘选中索引，-1 表示无选中
+let currentResults = [];   // 当前搜索结果列表
+
+// ==================== 防抖 ====================
+function debounce(fn, delay) {
+  return function (...args) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// ==================== 模拟异步搜索 ====================
+function mockSearch(query) {
+  return new Promise(resolve => {
+    // 模拟 300~600ms 网络延迟
+    const latency = 300 + Math.random() * 300;
+    setTimeout(() => {
+      if (!query.trim()) { resolve([]); return; }
+      const q = query.toLowerCase();
+      const results = DATASET.filter(item =>
+        item.title.toLowerCase().includes(q) ||
+        item.desc.toLowerCase().includes(q)
+      );
+      resolve(results);
+    }, latency);
+  });
+}
+
+// ==================== 高亮关键词 ====================
+function highlight(text, keyword) {
+  if (!keyword) return escapeHtml(text);
+  // 转义正则特殊字符，支持中英文
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return escapeHtml(text).replace(
+    new RegExp(`(${escaped})`, 'gi'),
+    '<mark>$1</mark>'
+  );
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ==================== 渲染 ====================
+
+// 空状态（初始）
+function renderEmpty() {
+  resultsEl.innerHTML = `
+    <div class="state-msg">
+      <div class="icon">&#128270;</div>
+      <p>输入关键词开始搜索<br>支持中英文搜索</p>
+    </div>`;
+  currentResults = [];
+  activeIndex = -1;
+}
+
+// 骨架屏
+function renderSkeleton() {
+  resultsEl.innerHTML = Array.from({ length: 3 }, () => `
+    <div class="skeleton-item">
+      <div class="skeleton-bar title"></div>
+      <div class="skeleton-bar desc"></div>
+    </div>`).join('');
+}
+
+// 无结果
+function renderNoResults(query) {
+  resultsEl.innerHTML = `
+    <div class="state-msg">
+      <div class="icon">&#128533;</div>
+      <p>未找到与「${escapeHtml(query)}」相关的结果<br>换个关键词试试吧</p>
+    </div>`;
+  currentResults = [];
+  activeIndex = -1;
+}
+
+// 搜索结果列表
+function renderResults(results, query) {
+  currentResults = results;
+  activeIndex = -1;
+
+  resultsEl.innerHTML = results.map((item, i) => `
+    <div class="result-item" data-index="${i}">
+      <div class="result-title">${highlight(item.title, query)}</div>
+      <div class="result-desc">${highlight(item.desc, query)}</div>
+    </div>`).join('');
+}
+
+// 更新选中高亮
+function updateActiveItem() {
+  const items = resultsEl.querySelectorAll('.result-item');
+  items.forEach((el, i) => {
+    el.classList.toggle('active', i === activeIndex);
+  });
+  // 滚动到可视区域
+  if (activeIndex >= 0 && items[activeIndex]) {
+    items[activeIndex].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// ==================== 核心搜索流程 ====================
+let searchId = 0; // 防止竞态：旧请求覆盖新结果
+
+const doSearch = debounce(async function (query) {
+  const id = ++searchId;
+
+  if (!query.trim()) {
+    renderEmpty();
+    return;
+  }
+
+  renderSkeleton();
+
+  const results = await mockSearch(query);
+
+  // 如果已被更新的搜索取代，丢弃本次结果
+  if (id !== searchId) return;
+
+  if (results.length === 0) {
+    renderNoResults(query);
+  } else {
+    renderResults(results, query);
+  }
+}, 300);
+
+// ==================== 事件绑定 ====================
+
+// 输入事件
+inputEl.addEventListener('input', () => {
+  const val = inputEl.value;
+  clearBtn.classList.toggle('visible', val.length > 0);
+  doSearch(val);
+});
+
+// 清空按钮
+clearBtn.addEventListener('click', () => {
+  inputEl.value = '';
+  clearBtn.classList.remove('visible');
+  renderEmpty();
+  inputEl.focus();
+});
+
+// 键盘导航
+inputEl.addEventListener('keydown', (e) => {
+  if (currentResults.length === 0) return;
+
+  switch (e.key) {
+    case 'ArrowDown':
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % currentResults.length;
+      updateActiveItem();
+      break;
+
+    case 'ArrowUp':
+      e.preventDefault();
+      activeIndex = activeIndex <= 0
+        ? currentResults.length - 1
+        : activeIndex - 1;
+      updateActiveItem();
+      break;
+
+    case 'Enter':
+      if (activeIndex >= 0 && currentResults[activeIndex]) {
+        selectItem(currentResults[activeIndex]);
+      }
+      break;
+
+    case 'Escape':
+      inputEl.value = '';
+      clearBtn.classList.remove('visible');
+      renderEmpty();
+      break;
+  }
+});
+
+// 鼠标点击结果
+resultsEl.addEventListener('click', (e) => {
+  const item = e.target.closest('.result-item');
+  if (!item) return;
+  const idx = parseInt(item.dataset.index, 10);
+  if (currentResults[idx]) {
+    selectItem(currentResults[idx]);
+  }
+});
+
+// 选中回调
+function selectItem(item) {
+  alert(`已选择：${item.title}\n${item.desc}`);
+}
+
+// ==================== 初始渲染 ====================
+renderEmpty();
+inputEl.focus();
+</script>
+
+</body>
+</html>
