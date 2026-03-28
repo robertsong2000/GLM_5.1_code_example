@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Scroll List - 10万条数据</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>虚拟滚动列表</h1>
+    <p class="subtitle">100,000 条数据 · 动态行高 · 最多渲染 30 个 DOM 节点</p>
+    <div class="stats">
+      <span id="rendered-count">已渲染: 0</span>
+      <span id="scroll-info">滚动位置: 0px</span>
+    </div>
+    <div id="virtual-list" class="virtual-list">
+      <div id="scroll-content" class="scroll-content">
+        <!-- 动态渲染的行将插入这里 -->
+      </div>
+    </div>
+  </div>
+  <script src="virtual-list.js"></script>
+</body>
+</html>
