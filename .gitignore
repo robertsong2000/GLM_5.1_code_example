@@ -25,3 +25,11 @@ Thumbs.db
 
 # Claude
 .claude/settings.json
+
+# Go compiled binaries & temp files
+/go/todo-cli/todo
+/go/todo-cli/todos.json
+/go/log-analyzer/log-analyzer
+/go/log-analyzer/generator/log-gen
+/go/load-tester/load-tester
+/go/load-tester/report.html
