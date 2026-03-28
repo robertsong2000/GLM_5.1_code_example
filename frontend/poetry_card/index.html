@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>望庐山瀑布 - 李白</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;500;600;700;900&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
+
+  :root {
+    --ink-deep: #1a1a2e;
+    --ink-medium: #2d2d44;
+    --mist-1: #a8c0c8;
+    --mist-2: #c5d5d8;
+    --mist-3: #dce8ea;
+    --mountain-dark: #2a4a3a;
+    --mountain-mid: #3d6b5a;
+    --mountain-light: #5a8a72;
+    --water-deep: #1e3a5f;
+    --water-mid: #2a5a8a;
+    --water-light: #4a8ab5;
+    --gold-accent: #c9a84c;
+    --gold-light: #e8d48b;
+    --gold-dim: #a08530;
+    --paper: #f5f0e8;
+    --paper-warm: #ebe3d5;
+    --text-primary: #2a2a3a;
+    --text-secondary: #5a5a6a;
+    --text-light: #8a8a9a;
+    --seal-red: #c23a2a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(175deg, #0a0f1a 0%, #0f1a2a 20%, #1a2a3a 40%, #1a2a2a 60%, #0f1a1a 80%, #0a0f0a 100%);
+    font-family: 'Noto Serif SC', serif;
+    overflow-x: hidden;
+    padding: 40px 20px;
+  }
+
+  /* Background landscape */
+  .landscape {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .mountain-layer {
+    position: absolute;
+    bottom: 0;
+    left: -5%;
+    width: 110%;
+  }
+
+  .mountain-far {
+    height: 45%;
+    background:
+      radial-gradient(ellipse 40% 60% at 15% 100%, #1a2a2a 0%, transparent 70%),
+      radial-gradient(ellipse 35% 55% at 50% 100%, #15252a 0%, transparent 65%),
+      radial-gradient(ellipse 45% 65% at 82% 100%, #1a2a2a 0%, transparent 70%);
+    opacity: 0.4;
+    animation: mountainDrift 30s ease-in-out infinite alternate;
+  }
+
+  .mountain-mid {
+    height: 35%;
+    background:
+      radial-gradient(ellipse 35% 50% at 20% 100%, #1a3028 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 55% 100%, #152a28 0%, transparent 65%),
+      radial-gradient(ellipse 38% 52% at 85% 100%, #1a3028 0%, transparent 70%);
+    opacity: 0.5;
+    animation: mountainDrift 25s ease-in-out infinite alternate-reverse;
+  }
+
+  .mountain-near {
+    height: 25%;
+    background:
+      radial-gradient(ellipse 30% 45% at 25% 100%, #0f1f1a 0%, transparent 70%),
+      radial-gradient(ellipse 35% 55% at 60% 100%, #0a1a15 0%, transparent 65%),
+      radial-gradient(ellipse 32% 48% at 88% 100%, #0f1f1a 0%, transparent 70%);
+    opacity: 0.6;
+  }
+
+  @keyframes mountainDrift {
+    from { transform: translateX(-10px); }
+    to { transform: translateX(10px); }
+  }
+
+  /* Moon */
+  .moon {
+    position: fixed;
+    top: 8%;
+    right: 15%;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #f5f0e0, #d8d0b8);
+    box-shadow: 0 0 40px rgba(200, 190, 160, 0.3), 0 0 80px rgba(200, 190, 160, 0.1);
+    opacity: 0.6;
+    animation: moonGlow 6s ease-in-out infinite alternate;
+  }
+
+  @keyframes moonGlow {
+    from { box-shadow: 0 0 40px rgba(200, 190, 160, 0.3), 0 0 80px rgba(200, 190, 160, 0.1); }
+    to { box-shadow: 0 0 60px rgba(200, 190, 160, 0.4), 0 0 100px rgba(200, 190, 160, 0.15); }
+  }
+
+  /* Mist particles */
+  .mist {
+    position: fixed;
+    width: 200%;
+    height: 100%;
+    top: 0;
+    left: -50%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .mist-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.08;
+  }
+
+  .mist-1 {
+    background: linear-gradient(90deg, transparent 0%, var(--mist-2) 20%, transparent 40%, var(--mist-1) 60%, transparent 80%);
+    animation: mistFloat 40s linear infinite;
+  }
+
+  .mist-2 {
+    background: linear-gradient(90deg, transparent 10%, var(--mist-3) 30%, transparent 50%, var(--mist-2) 70%, transparent 90%);
+    animation: mistFloat 55s linear infinite reverse;
+  }
+
+  .mist-3 {
+    background: linear-gradient(90deg, transparent 5%, rgba(200,210,220,0.5) 25%, transparent 45%, rgba(180,200,210,0.3) 65%, transparent 85%);
+    animation: mistFloat 35s linear infinite;
+    opacity: 0.05;
+  }
+
+  @keyframes mistFloat {
+    from { transform: translateX(-25%); }
+    to { transform: translateX(0%); }
+  }
+
+  /* Main card */
+  .card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 580px;
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-warm) 100%);
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.1),
+      0 8px 16px rgba(0,0,0,0.15),
+      0 24px 48px rgba(0,0,0,0.2),
+      0 0 0 1px rgba(200, 190, 170, 0.3);
+    animation: cardReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  @keyframes cardReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Top decorative border */
+  .card-border-top {
+    height: 6px;
+    background: linear-gradient(90deg,
+      var(--mountain-dark),
+      var(--mountain-mid),
+      var(--gold-accent),
+      var(--mountain-mid),
+      var(--mountain-dark)
+    );
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-border-top::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; right: 0; bottom: 0;
+    width: 300%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { transform: translateX(-33%); }
+    50% { transform: translateX(33%); }
+  }
+
+  /* Card inner frame */
+  .card-inner {
+    margin: 20px 24px;
+    border: 1px solid rgba(42, 74, 58, 0.15);
+    padding: 0;
+    position: relative;
+  }
+
+  .card-inner::before {
+    content: '';
+    position: absolute;
+    top: 4px; left: 4px; right: 4px; bottom: 4px;
+    border: 1px solid rgba(42, 74, 58, 0.08);
+    pointer-events: none;
+  }
+
+  /* Corner decorations */
+  .corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+  }
+
+  .corner svg { width: 100%; height: 100%; }
+
+  .corner-tl { top: -1px; left: -1px; }
+  .corner-tr { top: -1px; right: -1px; transform: rotate(90deg); }
+  .corner-bl { bottom: -1px; left: -1px; transform: rotate(-90deg); }
+  .corner-br { bottom: -1px; right: -1px; transform: rotate(180deg); }
+
+  /* Header section */
+  .card-header {
+    text-align: center;
+    padding: 40px 30px 30px;
+    position: relative;
+    background:
+      radial-gradient(ellipse at 50% 80%, rgba(42, 90, 138, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 30% 20%, rgba(201, 168, 76, 0.06) 0%, transparent 40%);
+  }
+
+  .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 30px;
+    right: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  /* Waterfall SVG behind title */
+  .waterfall-bg {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    opacity: 0.08;
+  }
+
+  .dynasty-tag {
+    display: inline-block;
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 11px;
+    color: var(--text-light);
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+    position: relative;
+    padding: 0 20px;
+  }
+
+  .dynasty-tag::before,
+  .dynasty-tag::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 1px;
+    background: var(--gold-dim);
+  }
+
+  .dynasty-tag::before { left: 0; }
+  .dynasty-tag::after { right: 0; }
+
+  .poem-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 38px;
+    color: var(--ink-deep);
+    letter-spacing: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    animation: titleFadeIn 1.5s ease-out 0.3s both;
+  }
+
+  @keyframes titleFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .poem-author {
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 15px;
+    color: var(--text-secondary);
+    letter-spacing: 6px;
+    animation: titleFadeIn 1.5s ease-out 0.5s both;
+  }
+
+  /* Poem text section */
+  .poem-body {
+    padding: 36px 40px;
+    text-align: center;
+    position: relative;
+  }
+
+  .poem-lines {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .poem-line {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 26px;
+    color: var(--ink-deep);
+    letter-spacing: 6px;
+    line-height: 1.8;
+    position: relative;
+    opacity: 0;
+    transform: translateY(15px);
+    animation: lineReveal 0.8s ease-out forwards;
+  }
+
+  .poem-line:nth-child(1) { animation-delay: 0.6s; }
+  .poem-line:nth-child(2) { animation-delay: 0.9s; }
+  .poem-line:nth-child(3) { animation-delay: 1.2s; }
+  .poem-line:nth-child(4) { animation-delay: 1.5s; }
+
+  @keyframes lineReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Seal stamp */
+  .seal {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    width: 44px;
+    height: 44px;
+    border: 2px solid var(--seal-red);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 14px;
+    color: var(--seal-red);
+    writing-mode: vertical-rl;
+    letter-spacing: 2px;
+    opacity: 0;
+    transform: rotate(-5deg) scale(0.8);
+    animation: sealStamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 2s forwards;
+    line-height: 1.2;
+    user-select: none;
+  }
+
+  @keyframes sealStamp {
+    to { opacity: 0.7; transform: rotate(-5deg) scale(1); }
+  }
+
+  /* Section dividers */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 40px;
+    gap: 12px;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(42, 74, 58, 0.15), transparent);
+  }
+
+  .section-divider-icon {
+    color: var(--gold-dim);
+    font-size: 14px;
+    opacity: 0.6;
+  }
+
+  /* Content sections */
+  .section {
+    padding: 28px 36px;
+    position: relative;
+  }
+
+  .section-label {
+    font-family: 'ZCOOL XiaoWei', serif;
+    font-size: 13px;
+    color: var(--gold-accent);
+    letter-spacing: 4px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: linear-gradient(180deg, var(--gold-accent), var(--gold-dim));
+    border-radius: 2px;
+  }
+
+  /* Annotations */
+  .annotation-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 14px;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  .annotation-term {
+    color: var(--mountain-mid);
+    font-weight: 600;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .annotation-def {
+    color: var(--text-secondary);
+  }
+
+  /* Translation */
+  .translation-text {
+    font-size: 14.5px;
+    color: var(--text-secondary);
+    line-height: 2;
+    text-indent: 2em;
+    letter-spacing: 1px;
+  }
+
+  /* Appreciation */
+  .appreciation-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 2;
+    text-indent: 2em;
+    letter-spacing: 0.5px;
+  }
+
+  .highlight-phrase {
+    color: var(--water-mid);
+    font-weight: 500;
+    border-bottom: 1px dashed rgba(42, 90, 138, 0.3);
+  }
+
+  /* Bottom decoration */
+  .card-footer {
+    text-align: center;
+    padding: 20px 30px 28px;
+    position: relative;
+  }
+
+  .card-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 30px;
+    right: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .footer-ornament {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--text-light);
+    letter-spacing: 3px;
+    opacity: 0.5;
+  }
+
+  .footer-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+  }
+
+  /* Card border bottom */
+  .card-border-bottom {
+    height: 4px;
+    background: linear-gradient(90deg,
+      var(--mountain-dark),
+      var(--water-deep),
+      var(--gold-accent),
+      var(--water-deep),
+      var(--mountain-dark)
+    );
+  }
+
+  /* Responsive */
+  @media (max-width: 620px) {
+    body { padding: 20px 12px; }
+    .card-inner { margin: 14px 16px; }
+    .card-header { padding: 30px 20px 24px; }
+    .poem-title { font-size: 30px; letter-spacing: 5px; }
+    .poem-body { padding: 28px 20px; }
+    .poem-line { font-size: 22px; letter-spacing: 4px; }
+    .section { padding: 22px 24px; }
+    .annotation-list { font-size: 13px; }
+    .seal { right: 16px; bottom: 16px; width: 38px; height: 38px; font-size: 12px; }
+  }
+
+  /* Print-friendly */
+  @media print {
+    body { background: white; }
+    .landscape, .mist, .moon { display: none; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background landscape -->
+<div class="landscape">
+  <div class="mountain-layer mountain-far"></div>
+  <div class="mountain-layer mountain-mid"></div>
+  <div class="mountain-layer mountain-near"></div>
+</div>
+<div class="moon"></div>
+
+<!-- Mist -->
+<div class="mist">
+  <div class="mist-layer mist-1"></div>
+  <div class="mist-layer mist-2"></div>
+  <div class="mist-layer mist-3"></div>
+</div>
+
+<!-- Main Card -->
+<div class="card">
+  <div class="card-border-top"></div>
+
+  <div class="card-inner">
+    <!-- Corner decorations -->
+    <div class="corner corner-tl">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M0 0 L20 0 L20 4 L4 4 L4 20 L0 20 Z" fill="rgba(42,74,58,0.25)"/>
+      </svg>
+    </div>
+    <div class="corner corner-tr">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M0 0 L20 0 L20 4 L4 4 L4 20 L0 20 Z" fill="rgba(42,74,58,0.25)"/>
+      </svg>
+    </div>
+    <div class="corner corner-bl">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M0 0 L20 0 L20 4 L4 4 L4 20 L0 20 Z" fill="rgba(42,74,58,0.25)"/>
+      </svg>
+    </div>
+    <div class="corner corner-br">
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M0 0 L20 0 L20 4 L4 4 L4 20 L0 20 Z" fill="rgba(42,74,58,0.25)"/>
+      </svg>
+    </div>
+
+    <!-- Header -->
+    <div class="card-header">
+      <!-- Waterfall motif -->
+      <svg class="waterfall-bg" viewBox="0 0 60 60" fill="none">
+        <path d="M25 5 Q28 15 22 30 Q18 45 25 55" stroke="rgba(42,90,138,0.6)" stroke-width="2" fill="none"/>
+        <path d="M30 5 Q33 18 28 32 Q24 48 30 55" stroke="rgba(42,90,138,0.4)" stroke-width="1.5" fill="none"/>
+        <path d="M35 5 Q38 12 32 28 Q28 42 35 55" stroke="rgba(42,90,138,0.5)" stroke-width="2" fill="none"/>
+      </svg>
+
+      <div class="dynasty-tag">唐</div>
+      <h1 class="poem-title">望庐山瀑布</h1>
+      <p class="poem-author">李　白</p>
+    </div>
+
+    <!-- Poem body -->
+    <div class="poem-body">
+      <div class="poem-lines">
+        <p class="poem-line">日照香炉生紫烟，</p>
+        <p class="poem-line">遥看瀑布挂前川。</p>
+        <p class="poem-line">飞流直下三千尺，</p>
+        <p class="poem-line">疑是银河落九天。</p>
+      </div>
+      <div class="seal">太白</div>
+    </div>
+
+    <div class="section-divider">
+      <span class="section-divider-icon">◆</span>
+    </div>
+
+    <!-- Annotations -->
+    <div class="section">
+      <div class="section-label">注　释</div>
+      <div class="annotation-list">
+        <span class="annotation-term">香炉</span>
+        <span class="annotation-def">指庐山香炉峰</span>
+        <span class="annotation-term">紫烟</span>
+        <span class="annotation-def">阳光照射下升腾的紫色烟雾</span>
+        <span class="annotation-term">前川</span>
+        <span class="annotation-def">山前的河流</span>
+        <span class="annotation-term">银河</span>
+        <span class="annotation-def">天河，星河</span>
+        <span class="annotation-term">九天</span>
+        <span class="annotation-def">天的最高处</span>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <span class="section-divider-icon">◇</span>
+    </div>
+
+    <!-- Translation -->
+    <div class="section">
+      <div class="section-label">译　文</div>
+      <p class="translation-text">
+        太阳照耀香炉峰生出袅袅紫烟，远远望去瀑布像长河悬挂山前。仿佛三千尺水流飞奔直冲而下，莫非是银河从九天之外落下来。
+      </p>
+    </div>
+
+    <div class="section-divider">
+      <span class="section-divider-icon">◇</span>
+    </div>
+
+    <!-- Appreciation -->
+    <div class="section">
+      <div class="section-label">赏　析</div>
+      <p class="appreciation-text">
+        这首诗运用了大胆的夸张和丰富的想象，以<span class="highlight-phrase">「飞流直下三千尺」</span>写瀑布之壮观，以<span class="highlight-phrase">「疑是银河落九天」</span>作奇妙的联想，把瀑布比作银河从天而降，气势磅礴，意境壮阔。全诗语言豪放，是李白浪漫主义诗风的代表作之一。
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <div class="footer-ornament">
+        <div class="footer-dot"></div>
+        庐山
+        <div class="footer-dot"></div>
+        山水诗
+        <div class="footer-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-border-bottom"></div>
+</div>
+
+</body>
+</html>
