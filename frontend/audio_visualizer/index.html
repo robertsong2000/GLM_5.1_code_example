@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Visualizer — 音频可视化</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  h1 {
+    margin-top: 20px;
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #8888cc;
+  }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .controls button {
+    background: rgba(100, 100, 200, 0.15);
+    border: 1px solid rgba(100, 100, 200, 0.3);
+    color: #aaaadd;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+  }
+  .controls button:hover {
+    background: rgba(100, 100, 200, 0.3);
+    color: #ccccff;
+    transform: translateY(-1px);
+  }
+  .controls button.active {
+    background: rgba(100, 100, 200, 0.4);
+    border-color: #8888ff;
+    color: #ffffff;
+  }
+
+  .canvas-container {
+    position: relative;
+    width: 95vw;
+    max-width: 1200px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+  }
+
+  .info {
+    margin: 10px 0 20px;
+    font-size: 0.75rem;
+    color: #555577;
+    letter-spacing: 1px;
+  }
+
+  /* 文件上传 */
+  #file-input { display: none; }
+
+  .drop-zone {
+    border: 2px dashed rgba(100, 100, 200, 0.3);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    color: #666699;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .drop-zone:hover {
+    border-color: rgba(100, 100, 200, 0.6);
+    color: #8888bb;
+  }
+  .drop-zone.dragover {
+    background: rgba(100, 100, 200, 0.1);
+    border-color: #8888ff;
+  }
+</style>
+</head>
+<body>
+
+<h1>Audio Visualizer</h1>
+
+<div class="controls">
+  <button id="btn-mic">Microphone</button>
+  <button id="btn-file">Upload Audio</button>
+  <button id="btn-demo">Demo Tone</button>
+  <span style="width: 1px; background: rgba(100,100,200,0.2);"></span>
+  <button id="mode-bars" class="active">Bars</button>
+  <button id="mode-wave">Wave</button>
+  <button id="mode-circle">Circle</button>
+</div>
+
+<div class="canvas-container">
+  <div class="drop-zone" id="drop-zone" style="display:none;">
+    <p>Drop an audio file here or click to browse</p>
+    <p style="font-size: 0.7rem; margin-top: 8px;">MP3 / WAV / OGG / FLAC</p>
+  </div>
+  <canvas id="canvas"></canvas>
+</div>
+
+<div class="info">
+  <span id="status">Ready</span> ·
+  <span id="freq-info">--</span>
+</div>
+
+<input type="file" id="file-input" accept="audio/*">
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
+const freqInfoEl = document.getElementById('freq-info');
+
+let audioCtx, analyser, source, dataArray, bufferLength;
+let isPlaying = false;
+let mode = 'bars';
+let animId;
+
+// ── Canvas 尺寸 ────────────────────────────────
+
+function resizeCanvas() {
+  const container = canvas.parentElement;
+  canvas.width = container.clientWidth * devicePixelRatio;
+  canvas.height = container.clientHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// ── 初始化音频上下文 ────────────────────────────
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  analyser.smoothingTimeConstant = 0.82;
+  bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+}
+
+function stopCurrent() {
+  if (source) {
+    try { source.disconnect(); } catch(e) {}
+    if (source.mediaStream) {
+      source.mediaStream.getTracks().forEach(t => t.stop());
+    }
+    source = null;
+  }
+  isPlaying = false;
+}
+
+// ── 麦克风 ──────────────────────────────────────
+
+document.getElementById('btn-mic').addEventListener('click', async () => {
+  initAudio();
+  stopCurrent();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    source = audioCtx.createMediaStreamSource(stream);
+    source.mediaStream = stream;
+    source.connect(analyser);
+    isPlaying = true;
+    statusEl.textContent = 'Microphone Active';
+    startVisualization();
+  } catch(e) {
+    statusEl.textContent = 'Mic access denied';
+  }
+});
+
+// ── 文件播放 ─────────────────────────────────────
+
+const fileInput = document.getElementById('file-input');
+const dropZone = document.getElementById('drop-zone');
+
+document.getElementById('btn-file').addEventListener('click', () => {
+  fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) loadAudioFile(file);
+});
+
+function loadAudioFile(file) {
+  initAudio();
+  stopCurrent();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    audioCtx.decodeAudioData(e.target.result, (buffer) => {
+      source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      source.start(0);
+      isPlaying = true;
+      statusEl.textContent = `Playing: ${file.name}`;
+      startVisualization();
+      source.onended = () => {
+        isPlaying = false;
+        statusEl.textContent = 'Playback ended';
+      };
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── 演示音调 ─────────────────────────────────────
+
+document.getElementById('btn-demo').addEventListener('click', () => {
+  initAudio();
+  stopCurrent();
+
+  // 生成丰富的演示音调（和弦 + LFO）
+  const duration = 60;
+  const sampleRate = audioCtx.sampleRate;
+  const length = duration * sampleRate;
+  const buffer = audioCtx.createBuffer(2, length, sampleRate);
+
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    for (let i = 0; i < length; i++) {
+      const t = i / sampleRate;
+      const lfo = 0.5 + 0.5 * Math.sin(2 * Math.PI * 0.2 * t);
+      data[i] =
+        0.2 * Math.sin(2 * Math.PI * 220 * t) +
+        0.15 * Math.sin(2 * Math.PI * 277.18 * t) +
+        0.15 * Math.sin(2 * Math.PI * 329.63 * t) +
+        0.12 * Math.sin(2 * Math.PI * 440 * t * lfo) +
+        0.08 * Math.sin(2 * Math.PI * 554.37 * t * (1.2 - 0.2 * lfo)) +
+        0.1 * (Math.random() * 2 - 1) * 0.3;
+      data[i] *= 0.6;
+    }
+  }
+
+  source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  source.start(0);
+  isPlaying = true;
+  statusEl.textContent = 'Demo Tone Active';
+  startVisualization();
+});
+
+// ── 可视化模式切换 ──────────────────────────────
+
+['bars', 'wave', 'circle'].forEach(m => {
+  document.getElementById(`mode-${m}`).addEventListener('click', (e) => {
+    document.querySelectorAll('.controls button[id^="mode-"]').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    mode = m;
+  });
+});
+
+// ── 可视化主循环 ─────────────────────────────────
+
+function startVisualization() {
+  if (animId) cancelAnimationFrame(animId);
+  draw();
+}
+
+function draw() {
+  if (!isPlaying) return;
+  animId = requestAnimationFrame(draw);
+
+  const W = canvas.width / devicePixelRatio;
+  const H = canvas.height / devicePixelRatio;
+
+  // 清屏（半透明叠加实现拖尾）
+  ctx.fillStyle = 'rgba(10, 10, 26, 0.15)';
+  ctx.fillRect(0, 0, W, H);
+
+  analyser.getByteFrequencyData(dataArray);
+
+  if (mode === 'bars') drawBars(W, H);
+  else if (mode === 'wave') drawWave(W, H);
+  else if (mode === 'circle') drawCircle(W, H);
+
+  // 频率信息
+  let maxVal = 0, maxIdx = 0;
+  for (let i = 0; i < bufferLength; i++) {
+    if (dataArray[i] > maxVal) { maxVal = dataArray[i]; maxIdx = i; }
+  }
+  const peakFreq = maxIdx * audioCtx.sampleRate / analyser.fftSize;
+  freqInfoEl.textContent = `Peak: ${Math.round(peakFreq)} Hz | Max: ${maxVal}`;
+}
+
+function drawBars(W, H) {
+  const barCount = 128;
+  const step = Math.floor(bufferLength / barCount);
+  const barWidth = W / barCount - 1;
+
+  for (let i = 0; i < barCount; i++) {
+    const val = dataArray[i * step] / 255;
+    const barH = val * H * 0.85;
+    const hue = (i / barCount) * 240 + 180;
+
+    // 发光效果
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.5)`;
+
+    // 渐变
+    const grad = ctx.createLinearGradient(0, H, 0, H - barH);
+    grad.addColorStop(0, `hsla(${hue}, 70%, 30%, 0.8)`);
+    grad.addColorStop(0.5, `hsla(${hue}, 80%, 55%, 0.9)`);
+    grad.addColorStop(1, `hsla(${hue}, 90%, 75%, 1)`);
+
+    ctx.fillStyle = grad;
+    const x = i * (barWidth + 1);
+    const radius = Math.min(3, barWidth / 2);
+    roundRect(ctx, x, H - barH, barWidth, barH, radius);
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawWave(W, H) {
+  analyser.getByteTimeDomainData(dataArray);
+
+  ctx.lineWidth = 2.5;
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = 'rgba(100, 130, 255, 0.6)';
+
+  const grad = ctx.createLinearGradient(0, 0, W, 0);
+  grad.addColorStop(0, '#6644ff');
+  grad.addColorStop(0.3, '#4488ff');
+  grad.addColorStop(0.6, '#44ddff');
+  grad.addColorStop(1, '#44ffaa');
+
+  ctx.strokeStyle = grad;
+  ctx.beginPath();
+
+  const sliceW = W / bufferLength;
+  for (let i = 0; i < bufferLength; i++) {
+    const v = dataArray[i] / 128.0;
+    const y = (v * H) / 2;
+    if (i === 0) ctx.moveTo(0, y);
+    else ctx.lineTo(i * sliceW, y);
+  }
+  ctx.stroke();
+
+  // 镜像波纹
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  for (let i = 0; i < bufferLength; i++) {
+    const v = dataArray[i] / 128.0;
+    const y = H - (v * H) / 2;
+    if (i === 0) ctx.moveTo(0, y);
+    else ctx.lineTo(i * sliceW, y);
+  }
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+}
+
+function drawCircle(W, H) {
+  const cx = W / 2;
+  const cy = H / 2;
+  const baseR = Math.min(W, H) * 0.25;
+  const points = 180;
+  const step = Math.floor(bufferLength / points);
+
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = 'rgba(100, 100, 255, 0.4)';
+
+  // 外环
+  const grad = ctx.createLinearGradient(cx - baseR, cy, cx + baseR, cy);
+  grad.addColorStop(0, '#6644ff');
+  grad.addColorStop(0.5, '#44aaff');
+  grad.addColorStop(1, '#44ffcc');
+
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i <= points; i++) {
+    const idx = (i % points) * step;
+    const val = dataArray[idx] / 255;
+    const r = baseR + val * baseR * 0.8;
+    const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+
+  // 内环
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath();
+  for (let i = 0; i <= points; i++) {
+    const idx = (i % points) * step;
+    const val = dataArray[idx] / 255;
+    const r = baseR * 0.6 + val * baseR * 0.3;
+    const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+
+  // 中心频率文字
+  let sum = 0;
+  for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+  const avg = sum / bufferLength;
+  ctx.fillStyle = `rgba(150, 160, 255, ${0.3 + (avg/255)*0.7})`;
+  ctx.font = `${20 + avg * 0.06}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(Math.round(avg), cx, cy);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+}
+</script>
+</body>
+</html>

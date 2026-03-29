@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markdown Editor — 实时预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #1e1e2e;
+    --bg-secondary: #181825;
+    --bg-surface: #242438;
+    --text-primary: #cdd6f4;
+    --text-secondary: #a6adc8;
+    --text-muted: #6c7086;
+    --accent: #89b4fa;
+    --accent-dim: rgba(137,180,250,0.15);
+    --border: #313244;
+    --green: #a6e3a1;
+    --red: #f38ba8;
+    --yellow: #f9e2af;
+    --mauve: #cba6f7;
+    --peach: #fab387;
+    --teal: #94e2d5;
+  }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* 工具栏 */
+  .toolbar {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .toolbar .title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-right: 16px;
+  }
+
+  .toolbar button {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .toolbar button:hover {
+    background: var(--accent-dim);
+    border-color: var(--border);
+    color: var(--text-primary);
+  }
+  .toolbar button[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  .toolbar .sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  .toolbar .stats {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* 主内容区 */
+  .main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* 编辑区 */
+  .editor-pane, .preview-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .pane-header {
+    background: var(--bg-surface);
+    padding: 6px 16px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pane-header .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .divider {
+    width: 1px;
+    background: var(--border);
+    cursor: col-resize;
+    transition: background 0.2s;
+  }
+  .divider:hover { background: var(--accent); }
+
+  /* 编辑器 */
+  .editor-wrap {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .line-numbers {
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    padding: 16px 0;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: right;
+    user-select: none;
+    width: 44px;
+    flex-shrink: 0;
+    padding-right: 12px;
+    white-space: pre;
+    overflow-y: hidden;
+  }
+
+  #editor {
+    flex: 1;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 16px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    tab-size: 2;
+    overflow-y: auto;
+  }
+  #editor::placeholder { color: var(--text-muted); }
+  #editor::-webkit-scrollbar { width: 6px; }
+  #editor::-webkit-scrollbar-track { background: transparent; }
+  #editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* 预览区 */
+  .preview-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+    background: var(--bg-primary);
+  }
+  .preview-wrap::-webkit-scrollbar { width: 6px; }
+  .preview-wrap::-webkit-scrollbar-track { background: transparent; }
+  .preview-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Markdown 渲染样式 */
+  .markdown h1 { font-size: 1.8rem; color: var(--accent); border-bottom: 2px solid var(--border); padding-bottom: 8px; margin: 0 0 16px; }
+  .markdown h2 { font-size: 1.4rem; color: var(--mauve); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin: 24px 0 12px; }
+  .markdown h3 { font-size: 1.15rem; color: var(--green); margin: 20px 0 8px; }
+  .markdown h4 { font-size: 1rem; color: var(--peach); margin: 16px 0 8px; }
+
+  .markdown p { margin: 0 0 12px; line-height: 1.7; }
+
+  .markdown strong { color: var(--red); font-weight: 600; }
+  .markdown em { color: var(--yellow); font-style: italic; }
+  .markdown del { color: var(--text-muted); }
+
+  .markdown a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed var(--accent); }
+  .markdown a:hover { border-bottom-style: solid; }
+
+  .markdown code {
+    background: var(--bg-surface);
+    color: var(--peach);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+  }
+
+  .markdown pre {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .markdown pre code {
+    background: none;
+    padding: 0;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  .markdown blockquote {
+    border-left: 3px solid var(--accent);
+    margin: 12px 0;
+    padding: 8px 16px;
+    background: var(--accent-dim);
+    border-radius: 0 6px 6px 0;
+    color: var(--text-secondary);
+  }
+
+  .markdown ul, .markdown ol { margin: 8px 0; padding-left: 24px; }
+  .markdown li { margin: 4px 0; line-height: 1.6; }
+  .markdown ul li::marker { color: var(--teal); }
+  .markdown ol li::marker { color: var(--mauve); }
+
+  .markdown hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 24px 0;
+  }
+
+  .markdown table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+  }
+  .markdown th {
+    background: var(--bg-surface);
+    color: var(--accent);
+    font-weight: 600;
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+  }
+  .markdown td {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+  }
+
+  .markdown img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* 任务列表 */
+  .markdown .task-item {
+    list-style: none;
+    margin-left: -20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .markdown .task-item input { accent-color: var(--green); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+  <span class="title">MD Editor</span>
+
+  <button data-tip="Bold" onclick="insert('**', '**')">B</button>
+  <button data-tip="Italic" onclick="insert('*', '*')"><i>I</i></button>
+  <button data-tip="Strike" onclick="insert('~~', '~~')">S</button>
+  <div class="sep"></div>
+  <button data-tip="Heading" onclick="insertLine('# ')">H</button>
+  <button data-tip="Link" onclick="insert('[', '](url)')">🔗</button>
+  <button data-tip="Code" onclick="insert('`', '`')">&lt;&gt;</button>
+  <button data-tip="Code Block" onclick="insertLine('```\n', '\n```')">{ }</button>
+  <div class="sep"></div>
+  <button data-tip="Unordered List" onclick="insertLine('- ')">•</button>
+  <button data-tip="Ordered List" onclick="insertLine('1. ')">1.</button>
+  <button data-tip="Task" onclick="insertLine('- [ ] ')">☑</button>
+  <div class="sep"></div>
+  <button data-tip="Quote" onclick="insertLine('> ')">"</button>
+  <button data-tip="Table" onclick="insertTable()">▦</button>
+  <button data-tip="HR" onclick="insertLine('---')">—</button>
+
+  <span class="stats" id="stats">0 words · 0 chars</span>
+</div>
+
+<!-- 主内容 -->
+<div class="main">
+  <div class="editor-pane">
+    <div class="pane-header"><span class="dot"></span> EDITOR</div>
+    <div class="editor-wrap">
+      <div class="line-numbers" id="lineNumbers">1</div>
+      <textarea id="editor" placeholder="Start writing Markdown..." spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="divider" id="divider"></div>
+
+  <div class="preview-pane">
+    <div class="pane-header"><span class="dot"></span> PREVIEW</div>
+    <div class="preview-wrap">
+      <div class="markdown" id="preview"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+const lineNumbers = document.getElementById('lineNumbers');
+const statsEl = document.getElementById('stats');
+
+// ── 默认内容 ──────────────────────────────────────
+
+const defaultContent = `# Markdown Editor
+
+A **real-time** Markdown editor with live preview.
+
+## Features
+
+- **Bold**, *italic*, and ~~strikethrough~~ text
+- Code blocks with syntax styling
+- Tables, lists, blockquotes
+- Task lists with checkboxes
+
+## Code Example
+
+\`\`\`python
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+print(fibonacci(10))  # 55
+\`\`\`
+
+## Table
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| Preview | Done | High |
+| Export | Todo | Medium |
+| Themes | Todo | Low |
+
+## Task List
+
+- [x] Editor with line numbers
+- [x] Real-time preview
+- [ ] Export to HTML
+- [ ] Dark/Light theme toggle
+
+> "Simplicity is the ultimate sophistication." — Leonardo da Vinci
+
+---
+
+*Start editing to see live preview!*
+`;
+
+editor.value = defaultContent;
+
+// ── Markdown 解析器 ────────────────────────────────
+
+function parseMarkdown(md) {
+  let html = md;
+
+  // 转义 HTML
+  html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // 代码块（保护起来）
+  const codeBlocks = [];
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (m, lang, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push(`<pre><code class="lang-${lang}">${code}</code></pre>`);
+    return `%%CODEBLOCK_${idx}%%`;
+  });
+
+  // 行内代码
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // 标题
+  html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // 水平线
+  html = html.replace(/^---$/gm, '<hr>');
+
+  // 引用
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // 图片
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+  // 链接
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+  // 粗体、斜体、删除线
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+
+  // 表格
+  html = html.replace(/((?:^\|.+\|$\n?)+)/gm, (block) => {
+    const rows = block.trim().split('\n');
+    if (rows.length < 2) return block;
+    let table = '<table>';
+    rows.forEach((row, i) => {
+      if (i === 1 && row.match(/^[\s|:-]+$/)) return; // 分隔行
+      const cells = row.split('|').filter(c => c.trim() !== '');
+      const tag = i === 0 ? 'th' : 'td';
+      table += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    });
+    table += '</table>';
+    return table;
+  });
+
+  // 任务列表
+  html = html.replace(/^- \[x\] (.+)$/gm, '<li class="task-item"><input type="checkbox" checked disabled>$1</li>');
+  html = html.replace(/^- \[ \] (.+)$/gm, '<li class="task-item"><input type="checkbox" disabled>$1</li>');
+
+  // 无序列表
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/((?:<li[^>]*>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  // 有序列表
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // 段落（非标签行）
+  html = html.replace(/^(?!<[a-z/])(.+)$/gm, (m, text) => {
+    if (text.trim()) return `<p>${text}</p>`;
+    return '';
+  });
+
+  // 还原代码块
+  codeBlocks.forEach((block, i) => {
+    html = html.replace(`%%CODEBLOCK_${i}%%`, block);
+  });
+
+  return html;
+}
+
+// ── 更新预览 ──────────────────────────────────────
+
+function update() {
+  preview.innerHTML = parseMarkdown(editor.value);
+  updateLineNumbers();
+  updateStats();
+}
+
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  lineNumbers.textContent = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+}
+
+function updateStats() {
+  const text = editor.value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const chars = text.length;
+  statsEl.textContent = `${words} words · ${chars} chars`;
+}
+
+// ── 编辑器工具 ────────────────────────────────────
+
+function insert(before, after) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selected = editor.value.substring(start, end);
+  const replacement = before + (selected || 'text') + after;
+  editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
+  editor.focus();
+  editor.selectionStart = start + before.length;
+  editor.selectionEnd = start + before.length + (selected || 'text').length;
+  update();
+}
+
+function insertLine(prefix, suffix = '') {
+  const start = editor.selectionStart;
+  const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
+  editor.value = editor.value.substring(0, lineStart) + prefix + editor.value.substring(lineStart, start) + suffix + editor.value.substring(start);
+  editor.focus();
+  update();
+}
+
+function insertTable() {
+  const table = '\n| Header 1 | Header 2 | Header 3 |\n|----------|----------|----------|\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |\n';
+  const pos = editor.selectionStart;
+  editor.value = editor.value.substring(0, pos) + table + editor.value.substring(pos);
+  editor.focus();
+  update();
+}
+
+// ── Tab 支持 ──────────────────────────────────────
+
+editor.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(editor.selectionEnd);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    update();
+  }
+});
+
+// ── 同步滚动 ──────────────────────────────────────
+
+editor.addEventListener('scroll', () => {
+  // 行号跟随编辑器垂直滚动
+  lineNumbers.scrollTop = editor.scrollTop;
+
+  // 预览区按比例滚动
+  const ratio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
+  const previewWrap = document.querySelector('.preview-wrap');
+  previewWrap.scrollTop = ratio * (previewWrap.scrollHeight - previewWrap.clientHeight);
+});
+
+// ── 可拖动分隔线 ──────────────────────────────────
+
+const divider = document.getElementById('divider');
+const editorPane = document.querySelector('.editor-pane');
+const previewPane = document.querySelector('.preview-pane');
+let isDragging = false;
+
+divider.addEventListener('mousedown', () => {
+  isDragging = true;
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const main = document.querySelector('.main');
+  const rect = main.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  editorPane.style.flex = `0 0 ${ratio * 100}%`;
+  previewPane.style.flex = `0 0 ${(1 - ratio) * 100}%`;
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+});
+
+// ── 初始化 ────────────────────────────────────────
+
+editor.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
