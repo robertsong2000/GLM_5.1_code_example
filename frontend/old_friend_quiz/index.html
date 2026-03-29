@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老友记进阶知识问答测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e67e22',
+                        secondary: '#d35400',
+                        neutral: '#f5f5f5',
+                        dark: '#333333',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-flip {
+                transform-style: preserve-3d;
+                transition: transform 0.6s ease-in-out;
+            }
+            .card-flip.flipped {
+                transform: rotateY(180deg);
+            }
+            .card-front, .card-back {
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .card-back {
+                transform: rotateY(180deg);
+            }
+            .perspective {
+                perspective: 1000px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen">
+    <!-- 头部 -->
+    <header class="bg-primary text-white py-8 shadow-lg">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-[clamp(1.8rem,4vw,3rem)] font-bold mb-2">
+                <i class="fa fa-coffee mr-3"></i>老友记进阶知识问答
+            </h1>
+            <p class="text-[clamp(1rem,2vw,1.2rem)] opacity-90">
+                点击卡片翻转，测试你是不是真·老友记铁粉！
+            </p>
+        </div>
+    </header>
+
+    <!-- 卡片容器 -->
+    <main class="container mx-auto px-4 py-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- 卡片1 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">1</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Ross为什么会被博物馆停职？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/ez1n1w9LWk" alt="Ross的三明治名场面" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            因为他的老板偷吃了他珍藏的感恩节剩菜三明治，Ross暴怒之下冲老板大吼，因此被停职反省。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片2 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">2</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Rachel做感恩节甜点时，误把什么咸食的食材加到了 trifle 里？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/E2uL1w9LWW" alt="Central Perk的伙伴们" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            她把两页粘在一起的食谱搞混了，把牧羊人派的牛肉、豌豆和洋葱加到了 trifle 里，做出了一半甜点一半咸派的诡异食物，只有Joey觉得好吃。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片3 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">3</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Chandler一直藏着的中间名是什么？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/wl8y1w9LWW" alt="Chandler在Central Perk" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            Muriel（默瑞尔），这也是他一直觉得很女性化、不想让大家知道的秘密。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片4 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">4</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Phoebe为弟弟代孕生下的三胞胎，名字分别是？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/EBNy1w9LX0" alt="弹吉他的Phoebe" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            Frank Jr.、Leslie 和 Chandler，最后一个名字是为了纪念她最好的朋友 Chandler。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片5 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">5</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">公寓赌局里，Rachel和Monica输掉公寓的最后一题是什么？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/E2uL1w9LWW" alt="六人合照" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            问题是 “Chandler 的工作到底是什么？”，Rachel 和 Monica 认识他这么久，居然完全答不上来，因此输掉了赌局，把公寓让给了 Joey 和 Chandler。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片6 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">6</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Ross和Emily的蜜月原本计划去哪里？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/ez1n1w9LWk" alt="Ross" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            雅典，但是因为 Ross 在婚礼上错把新娘 Emily 的名字叫成了 Rachel，Emily 最终没有和他一起去度蜜月。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片7 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">7</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Joey搭讪女生时用的假名字是什么？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/wl8y1w9LWW" alt="Joey和Chandler" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            Ken Adams，而 Phoebe 对应的假名则是经典的 Regina Phalange。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片8 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">8</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Chandler有一个很少人知道的身体秘密，他有几个乳头？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/wl8y1w9LWW" alt="Chandler" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            三个，他的第三个乳头只有小豆子那么大，也被他称为 “nubbin”。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片9 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">9</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Ross为了面子，把他的粉色衬衫说成了什么颜色？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/ez1n1w9LWk" alt="Ross" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            他坚称那是 “鲑鱼色”，绝对不是粉色。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片10 -->
+            <div class="perspective h-96">
+                <div class="card-flip w-full h-full relative">
+                    <!-- 正面 -->
+                    <div class="card-front bg-white rounded-2xl shadow-xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-primary font-bold text-2xl">10</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-dark">Chandler的爸爸在拉斯维加斯的变装秀叫什么名字？</h3>
+                        <p class="text-gray-500 mt-4 text-sm">点击卡片查看答案</p>
+                        <i class="fa fa-exchange text-primary mt-6 text-xl"></i>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="card-back bg-white rounded-2xl shadow-xl p-6 flex flex-col">
+                        <img src="https://aka.doubaocdn.com/s/E2uL1w9LWW" alt="六人合照" class="w-full h-48 object-cover rounded-lg mb-4">
+                        <h4 class="font-semibold text-dark mb-2">答案</h4>
+                        <p class="text-gray-700 text-sm flex-1">
+                            Viva Las Gaygas，是一个全男性的变装表演秀。
+                        </p>
+                        <p class="text-gray-400 text-xs mt-2 text-center">点击翻回</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-6 mt-10">
+        <div class="container mx-auto px-4 text-center">
+            <p class="opacity-70 text-sm">
+                I'll be there for you~ | 老友记粉丝专属测试
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 修复点击交互，统一绑定事件
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载动画
+            const cards = document.querySelectorAll('.card-flip');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                    // 入场动画结束后清除内联样式，避免覆盖翻转的 transform
+                    setTimeout(() => {
+                        card.style.transition = '';
+                        card.style.opacity = '';
+                        card.style.transform = '';
+                    }, 500);
+                }, index * 100);
+
+                // 绑定点击翻转事件
+                card.addEventListener('click', () => {
+                    card.classList.toggle('flipped');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
